@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using AccountMicroservice.Data;
 using Microsoft.EntityFrameworkCore;
 
-using AccountMicroservice.Services;
+using AccountMicroservice.SignalR.ClientServices;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using AccountMicroservice.Data.Services;
 using AccountMicroservice.Data.Services.Impl;
 using Microsoft.Extensions.FileProviders;
+using AccountMicroservice.MessageBus.Publishers;
+using AccountMicroservice.MessageBus.Publishers.Interfaces;
 
 namespace AccountMicroservice
 {
@@ -48,10 +50,14 @@ namespace AccountMicroservice
                     IFileProvider physicalProvider = new PhysicalFileProvider(root);
                     services.AddSingleton<IFileProvider>(physicalProvider);
 
+                    services.AddSignalR();
 
-                    services.AddHostedService<SignalClientService>();
+                    services.AddHostedService<SignalRClientService>();
+
                     services.AddScoped<IAuthService, AuthService>();
                     services.AddScoped<IAccountService, AccountService>();
+
+                    services.AddScoped<IAccountMQPublisher, AccountMQPublisher>();
                 })
                 .ConfigureLogging((hostContext, configLogging) =>
                 {

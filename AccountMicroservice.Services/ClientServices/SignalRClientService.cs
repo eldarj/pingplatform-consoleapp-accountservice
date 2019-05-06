@@ -10,10 +10,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
+using System.IO;
+using System.Threading.Channels;
+using AccountMicroservice.MessageBus.Publishers.Interfaces;
 
-namespace AccountMicroservice.Services
+namespace AccountMicroservice.SignalR.ClientServices
 {
-    public class SignalClientService : IHostedService
+    public class SignalRClientService : IHostedService
     {
         private readonly ILogger logger;
         private readonly IApplicationLifetime appLifetime;
@@ -25,21 +28,22 @@ namespace AccountMicroservice.Services
 
         private readonly IFileProvider fileProvider;
 
-        public SignalClientService(
-            ILogger<SignalClientService> logger,
+        private readonly IAccountMQPublisher accountMQPublisher;
+
+        public SignalRClientService(
+            ILogger<SignalRClientService> logger,
             IApplicationLifetime applicationLifetime,
             IAuthService authService,
             IAccountService accountService,
-            IFileProvider fileProvider)
+            IFileProvider fileProvider,
+            IAccountMQPublisher accountMQPublisher)
         {
             this.accountService = accountService;
             this.authService = authService;
             this.logger = logger;
             this.appLifetime = applicationLifetime;
             this.fileProvider = fileProvider;
-
-
-            var meta = fileProvider.GetFileInfo("appsettings.json");
+            this.accountMQPublisher = accountMQPublisher;
 
             // Setup SignalR Hub connection
             hubConnectionAuth = new HubConnectionBuilder()
@@ -93,6 +97,17 @@ namespace AccountMicroservice.Services
                     }
                     logger.LogInformation("AccountMicroservice connected to AccountHub successfully (OnStarted)");
                 });
+
+                IFileInfo meta = fileProvider.GetFileInfo("files/file.txt");
+                if (meta.Exists)
+                {
+                    using(var fs = meta.CreateReadStream())
+                    {
+                        byte[] readBytes = File.ReadAllBytes(meta.PhysicalPath);
+                        await hubConnectionAuth.SendAsync("FileReceivedTest", "test");
+                    }
+                }
+
 
                 hubConnectionAccount.On<string, string, string>("CoverUpload", async (appId, phoneNumber, imgUrl) =>
                 {
@@ -190,18 +205,25 @@ namespace AccountMicroservice.Services
                 {
                     logger.LogInformation($"-- {appId} requesting registration for {accountRequest.PhoneNumber}.");
 
-                    var newAccount = await authService.Registration(accountRequest);
+                    AccountDto newAccount = await authService.Registration(accountRequest);
                     if (newAccount != null)
                     {
+                        // Send (back) signalR message
+                        await hubConnectionAuth.SendAsync("RegistrationDone", appId, newAccount);
+
+                        // Log to microservice log
                         logger.LogInformation($"-- {accountRequest.PhoneNumber} registered (Success). " +
                             $"Requested by: {appId} - sending back data.");
-                        await hubConnectionAuth.SendAsync("RegistrationDone", appId, newAccount);
+
+                        // TODO: Sent out an event that we registered a new user
+                        accountMQPublisher.SendCreatedAccount(newAccount);
                     }
                     else
                     {
-                        logger.LogInformation($"-- {accountRequest.PhoneNumber} did not register - " +
+                        logger.LogWarning($"-- {accountRequest.PhoneNumber} did not register - " +
                             $"account with same phonenumber already exists(Fail). " +
                             $"Requested by: {appId} - sending back error message.");
+
                         await hubConnectionAuth.SendAsync("RegistrationFailed", appId, $"Account registration failed for: {appId}");
                     }
                 });
@@ -224,6 +246,17 @@ namespace AccountMicroservice.Services
         {
             logger.LogInformation("AccountMicroservice stopped (OnStopped)");
             // Perform post-stopped activities here
+        }
+
+        private async Task WriteItems(ChannelWriter<int> writer, int count, int delay)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                await writer.WriteAsync(i);
+                await Task.Delay(delay);
+            }
+
+            writer.TryComplete();
         }
     }
 }

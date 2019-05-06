@@ -20,6 +20,8 @@ namespace AccountMicroservice.Data.Models
         public string AvatarImageUrl { get; set; }
         public string CoverImageUrl { get; set; }
 
+        public string DataSpaceDirName { get; set; }
+
         [InverseProperty("Account")]
         public virtual ICollection<Contact> Contacts { get; set; }
     }

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.Services", "AccountMicroservice.Services\AccountMicroservice.Services.csproj", "{20E42A0D-2EA6-42A4-9402-874038E97025}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.SignalR", "AccountMicroservice.Services\AccountMicroservice.SignalR.csproj", "{20E42A0D-2EA6-42A4-9402-874038E97025}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.MessageBus", "AccountMicroservice.Bus\AccountMicroservice.MessageBus.csproj", "{02852475-41B8-43D7-AA3B-B1234645B6C3}"
 EndProject
