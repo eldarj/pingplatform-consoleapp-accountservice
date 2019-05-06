@@ -29,6 +29,7 @@ namespace AccountMicroservice.Data.Services.Impl
 
             return new AccountDto
             {
+                Id = account.Id,
                 Firstname = account.Firstname,
                 Lastname = account.Lastname,
                 Email = account.Email,
@@ -51,6 +52,7 @@ namespace AccountMicroservice.Data.Services.Impl
 
             return new AccountDto
             {
+                Id = account.Id,
                 Firstname = account.Firstname,
                 Lastname = account.Lastname,
                 Email = account.Email,
@@ -77,6 +79,7 @@ namespace AccountMicroservice.Data.Services.Impl
 
             return new AccountDto
             {
+                Id = account.Id,
                 Firstname = account.Firstname,
                 Lastname = account.Lastname,
                 Email = account.Email,
