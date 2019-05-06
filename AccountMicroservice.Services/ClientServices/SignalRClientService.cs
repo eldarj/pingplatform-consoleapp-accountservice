@@ -98,6 +98,7 @@ namespace AccountMicroservice.SignalR.ClientServices
                     logger.LogInformation("AccountMicroservice connected to AccountHub successfully (OnStarted)");
                 });
 
+                // TODO: Remove this here and from the hub
                 IFileInfo meta = fileProvider.GetFileInfo("files/file.txt");
                 if (meta.Exists)
                 {
@@ -208,15 +209,15 @@ namespace AccountMicroservice.SignalR.ClientServices
                     AccountDto newAccount = await authService.Registration(accountRequest);
                     if (newAccount != null)
                     {
-                        // Send (back) signalR message
-                        await hubConnectionAuth.SendAsync("RegistrationDone", appId, newAccount);
-
                         // Log to microservice log
                         logger.LogInformation($"-- {accountRequest.PhoneNumber} registered (Success). " +
                             $"Requested by: {appId} - sending back data.");
 
-                        // TODO: Sent out an event that we registered a new user
+                        // TODO: Sent new registered account (message) to MQ
                         accountMQPublisher.SendCreatedAccount(newAccount);
+
+                        // Send signalR message (trigger any MQ consumer and consumer-apps)
+                        await hubConnectionAuth.SendAsync("RegistrationDone", appId, newAccount);
                     }
                     else
                     {
