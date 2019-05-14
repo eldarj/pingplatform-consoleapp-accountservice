@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190501143122_Init")]
+    [Migration("20190512214513_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,8 @@ namespace AccountMicroservice.Data.Migrations
                     b.Property<string>("AvatarImageUrl");
 
                     b.Property<string>("CoverImageUrl");
+
+                    b.Property<string>("DataSpaceDirName");
 
                     b.Property<DateTime>("DateRegistered");
 

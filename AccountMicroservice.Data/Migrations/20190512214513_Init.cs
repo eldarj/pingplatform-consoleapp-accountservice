@@ -20,7 +20,8 @@ namespace AccountMicroservice.Data.Migrations
                     PhoneNumber = table.Column<string>(nullable: false),
                     DateRegistered = table.Column<DateTime>(nullable: false),
                     AvatarImageUrl = table.Column<string>(nullable: true),
-                    CoverImageUrl = table.Column<string>(nullable: true)
+                    CoverImageUrl = table.Column<string>(nullable: true),
+                    DataSpaceDirName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
