@@ -9,12 +9,14 @@ namespace AccountMicroservice.MessageBus.Publishers
 {
     public class AccountMQPublisher : IAccountMQPublisher
     {
-        private static ConnectionFactory _factory;
-        private static IConnection _connection;
-        private static IModel _model;
+        private static ConnectionFactory connectionFactory;
+        private static IConnection connection;
+        private static IModel channel;
 
         private const string ExchangeType = "fanout";
         private const string ExchangeName = "RegisterAccount_FanoutExchange";
+        private readonly string ChatQueueName = "ChatMicroservice_RegisterAccount_Queue";
+        private readonly string DataSpaceQueueName = "DataSpaceMicroservice_RegisterAccount_Queue";
 
         public AccountMQPublisher()
         {
@@ -23,33 +25,53 @@ namespace AccountMicroservice.MessageBus.Publishers
 
         public void Close()
         {
-            _connection.Close();
+            connection.Close();
         }
 
         public void CreateConnection()
         {
-            _factory = new ConnectionFactory
+            connectionFactory = new ConnectionFactory
             {
                 HostName = "localhost",
                 UserName = "guest",
                 Password = "guest"
             };
 
-            _connection = _factory.CreateConnection();
-            _model = _connection.CreateModel();
+            connection = connectionFactory.CreateConnection();
+            channel = connection.CreateModel();
 
-            _model.ExchangeDeclare(exchange: ExchangeName, 
+            channel.ExchangeDeclare(exchange: ExchangeName, 
                 type: ExchangeType, 
                 durable: true, 
                 autoDelete: false, 
                 arguments: null);
+
+            channel.QueueDeclare(queue: ChatQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            channel.QueueBind(queue: ChatQueueName,
+                exchange: ExchangeName,
+                routingKey: "");
+
+            channel.QueueDeclare(queue: DataSpaceQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            channel.QueueBind(queue: DataSpaceQueueName,
+                exchange: ExchangeName,
+                routingKey: "");
         }
 
         public void SendCreatedAccount<T>(T account)
         {
             var serializedAccount = account.Serialize();
 
-            _model.BasicPublish(exchange: ExchangeName, 
+            channel.BasicPublish(exchange: ExchangeName, 
                 routingKey: "", 
                 basicProperties: null, 
                 body: serializedAccount);

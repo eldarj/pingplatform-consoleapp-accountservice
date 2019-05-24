@@ -12,9 +12,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.FileProviders;
+
 using AccountMicroservice.Data.Services;
 using AccountMicroservice.Data.Services.Impl;
-using Microsoft.Extensions.FileProviders;
 using AccountMicroservice.MessageBus.Publishers;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
 

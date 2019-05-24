@@ -1,6 +1,7 @@
 ﻿using AccountMicroservice.Data;
 using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
+using Ping.Commons.Dtos.Models.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,22 @@ namespace AccountMicroservice.Data.Services.Impl
                 PhoneNumber = accountDto.PhoneNumber
             };
 
+            if (accountDto.Contacts?.Count > 0)
+            {
+                var dtoContacts = accountDto.Contacts.Select(dto => dto.PhoneNumber).ToList();
+                List<Account> contactsToAdd = dbContext.Accounts
+                    .Where(a => dtoContacts.Contains(a.PhoneNumber))
+                    .ToList();
+
+                account.Contacts = contactsToAdd.Select(a => new Contact
+                {
+                    Account = account,
+                    ContactAccountId = a.Id,
+                    ContactName = accountDto.Contacts.SingleOrDefault(c => c.PhoneNumber == a.PhoneNumber)?.ContactName
+                })
+                .ToList();
+            }
+
             // TODO: Generate a Token (on Prod this will be a phone/sms code confirmation ~ on Dev think about how to implement this)
             var token = new AuthToken
             {
@@ -76,7 +93,14 @@ namespace AccountMicroservice.Data.Services.Impl
                 PhoneNumber = account.PhoneNumber,
                 DateRegistered = account.DateRegistered,
                 Token = token.Value,
-                CreateSession = true
+                CreateSession = true,
+                Contacts = account.Contacts?.Select(c => new ContactDto
+                {
+                    ContactName = c.ContactName,
+                    PhoneNumber = c.ContactAccount.PhoneNumber,
+                    ContactAccountId = c.ContactAccountId,
+                    DateAdded = c.DateAdded
+                }).ToList()
             };
         }
     }
