@@ -40,7 +40,16 @@ namespace AccountMicroservice.Data.Services.Impl
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
                 CoverImageUrl = account.CoverImageUrl,
-                CreateSession = true
+                CreateSession = true,
+                Contacts = account.Contacts?.Select(c => new ContactDto
+                {
+                    DateAdded = c.DateAdded,
+                    ContactName = c.ContactName,
+                    AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
+                    CoverImageUrl = c.ContactAccount.CoverImageUrl,
+                    PhoneNumber = c.ContactAccount.PhoneNumber,
+                    ContactAccountId = c.ContactAccountId
+                }).ToList()
             };
         }
 
@@ -96,10 +105,12 @@ namespace AccountMicroservice.Data.Services.Impl
                 CreateSession = true,
                 Contacts = account.Contacts?.Select(c => new ContactDto
                 {
+                    DateAdded = c.DateAdded,
                     ContactName = c.ContactName,
+                    AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
+                    CoverImageUrl = c.ContactAccount.CoverImageUrl,
                     PhoneNumber = c.ContactAccount.PhoneNumber,
-                    ContactAccountId = c.ContactAccountId,
-                    DateAdded = c.DateAdded
+                    ContactAccountId = c.ContactAccountId
                 }).ToList()
             };
         }
