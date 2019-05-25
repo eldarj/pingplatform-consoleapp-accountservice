@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using AccountMicroservice.Data;
-using Microsoft.EntityFrameworkCore;
 
 using AccountMicroservice.SignalR.ClientServices;
 
@@ -13,11 +12,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.EntityFrameworkCore;
 
 using AccountMicroservice.Data.Services;
 using AccountMicroservice.Data.Services.Impl;
 using AccountMicroservice.MessageBus.Publishers;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
+using AccountMicroservice.MessageBus.Consumers;
 
 namespace AccountMicroservice
 {
@@ -25,6 +26,8 @@ namespace AccountMicroservice
     {
         public static async Task Main(string[] args)
         {
+            Console.WriteLine("::Account Microservice::");
+
             var host = new HostBuilder()
                 .ConfigureHostConfiguration(configHost =>
                 {
@@ -41,11 +44,14 @@ namespace AccountMicroservice
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    //services.AddDbContextPool<MyDbContext>(options =>
-                    //    options.UseMySql(hostContext.Configuration.GetConnectionString("MysqlAccountMicroservice"), b =>
-                    //        b.MigrationsAssembly("AccountMicroservice.Data"))
-                    //);
                     services.AddDbContext<MyDbContext>();
+                    //services.AddDbContextPool<MyDbContext>(options =>
+                    //{
+                    //    // TODO: Add this in appsettings or ENV (dev, prod) vars
+                    //    options.UseLazyLoadingProxies()
+                    //        .UseMySql(hostContext.Configuration.GetConnectionString("MysqlAccountMicroservice"), a =>
+                    //            a.MigrationsAssembly("AccountMicroservice.Data"));
+                    //});
 
                     var root = Directory.GetCurrentDirectory();
                     IFileProvider physicalProvider = new PhysicalFileProvider(root);
@@ -54,6 +60,7 @@ namespace AccountMicroservice
                     services.AddSignalR();
 
                     services.AddHostedService<SignalRClientService>();
+                    services.AddHostedService<ContactMQConsumer>();
 
                     services.AddScoped<IAuthService, AuthService>();
                     services.AddScoped<IAccountService, AccountService>();
@@ -68,7 +75,6 @@ namespace AccountMicroservice
                 .UseConsoleLifetime()
                 .Build();
             
-            Console.WriteLine("::Account Microservice::");
             await host.RunAsync();
         }
     }

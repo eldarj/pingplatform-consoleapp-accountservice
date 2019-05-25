@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AccountMicroservice.Data;
+using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
+using Microsoft.EntityFrameworkCore;
+using Ping.Commons.Dtos.Models.Auth;
 
 namespace AccountMicroservice.Data.Services.Impl
 {
@@ -15,6 +18,34 @@ namespace AccountMicroservice.Data.Services.Impl
         public AccountService(MyDbContext dbContext)
         {
             this.dbContext = dbContext;
+        }
+
+        public async Task<bool> AddContact(ContactDto contactDto)
+        {
+            Account account = await dbContext.Accounts
+                .Where(a => a.PhoneNumber == contactDto.PhoneNumber)
+                .SingleOrDefaultAsync();
+
+            if (account == null) return false;
+
+            Account contactAccount = await dbContext.Accounts
+                .Where(a => a.PhoneNumber == contactDto.ContactPhoneNumber)
+                .SingleOrDefaultAsync();
+
+            if (contactAccount == null) return false; // Implement adding contacts that are not currently registered
+
+            Contact contact = new Contact
+            {
+                AccountId = account.Id,
+                ContactAccountId = contactAccount.Id,
+                ContactName = contactDto.ContactName,
+                DateAdded = contactDto.DateAdded
+            };
+
+            dbContext.Contacts.Add(contact);
+            await dbContext.SaveChangesAsync();
+
+            return true;
         }
 
         // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?

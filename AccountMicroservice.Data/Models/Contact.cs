@@ -10,8 +10,8 @@ namespace AccountMicroservice.Data.Models
         public string ContactName { get; set; }
 
         public int AccountId { get; set; }
-        public Account Account { get; set; }
+        public virtual Account Account { get; set; }
         public int ContactAccountId { get; set; }
-        public Account ContactAccount { get; set; }
+        public virtual Account ContactAccount { get; set; }
     }
 }

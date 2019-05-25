@@ -24,5 +24,6 @@ namespace AccountMicroservice.Data.Models
 
         [InverseProperty("Account")]
         public virtual ICollection<Contact> Contacts { get; set; }
+
     }
 }

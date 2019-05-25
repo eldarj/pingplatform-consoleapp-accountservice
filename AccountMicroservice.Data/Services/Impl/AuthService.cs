@@ -1,6 +1,7 @@
 ﻿using AccountMicroservice.Data;
 using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
+using Microsoft.EntityFrameworkCore;
 using Ping.Commons.Dtos.Models.Auth;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,12 @@ namespace AccountMicroservice.Data.Services.Impl
 
         public AccountDto Authenticate(string phoneNumber)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == phoneNumber).SingleOrDefault();
+            var account = dbContext.Accounts
+                .Where(a => a.PhoneNumber == phoneNumber)
+                .Include(a => a.Contacts)
+                    .ThenInclude(c => c.ContactAccount)
+                .SingleOrDefault();
+
             if (account == null) return null;
 
             return new AccountDto
@@ -47,7 +53,7 @@ namespace AccountMicroservice.Data.Services.Impl
                     ContactName = c.ContactName,
                     AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
                     CoverImageUrl = c.ContactAccount.CoverImageUrl,
-                    PhoneNumber = c.ContactAccount.PhoneNumber,
+                    ContactPhoneNumber = c.ContactAccount.PhoneNumber,
                     ContactAccountId = c.ContactAccountId
                 }).ToList()
             };
@@ -109,7 +115,7 @@ namespace AccountMicroservice.Data.Services.Impl
                     ContactName = c.ContactName,
                     AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
                     CoverImageUrl = c.ContactAccount.CoverImageUrl,
-                    PhoneNumber = c.ContactAccount.PhoneNumber,
+                    ContactPhoneNumber = c.ContactAccount.PhoneNumber,
                     ContactAccountId = c.ContactAccountId
                 }).ToList()
             };
