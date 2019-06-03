@@ -12,13 +12,13 @@ namespace AccountMicroservice.Data.Migrations
                 name: "CallingCode",
                 columns: table => new
                 {
-                    CountryCode = table.Column<int>(nullable: false),
+                    CallingCountryCode = table.Column<int>(nullable: false),
                     CountryName = table.Column<string>(nullable: true),
                     IsoCode = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CallingCode", x => x.CountryCode);
+                    table.PrimaryKey("PK_CallingCode", x => x.CallingCountryCode);
                 });
 
             migrationBuilder.CreateTable(
@@ -35,16 +35,16 @@ namespace AccountMicroservice.Data.Migrations
                     AvatarImageUrl = table.Column<string>(nullable: true),
                     CoverImageUrl = table.Column<string>(nullable: true),
                     DataSpaceDirName = table.Column<string>(nullable: true),
-                    CallingCodeId = table.Column<int>(nullable: false)
+                    CallingCountryCode = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Accounts_CallingCode_CallingCodeId",
-                        column: x => x.CallingCodeId,
+                        name: "FK_Accounts_CallingCode_CallingCountryCode",
+                        column: x => x.CallingCountryCode,
                         principalTable: "CallingCode",
-                        principalColumn: "CountryCode",
+                        principalColumn: "CallingCountryCode",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -98,9 +98,9 @@ namespace AccountMicroservice.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accounts_CallingCodeId",
+                name: "IX_Accounts_CallingCountryCode",
                 table: "Accounts",
-                column: "CallingCodeId");
+                column: "CallingCountryCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_PhoneNumber",

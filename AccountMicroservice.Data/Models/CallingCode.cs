@@ -10,7 +10,7 @@ namespace AccountMicroservice.Data.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int CountryCode { get; set; }
+        public int CallingCountryCode { get; set; }
         public string CountryName { get; set; }
         public string IsoCode { get; set; }
     }

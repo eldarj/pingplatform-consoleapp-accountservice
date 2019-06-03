@@ -30,7 +30,7 @@ namespace AccountMicroservice.Data.Services.Impl
         {
             var account = dbContext.Accounts
                 .Where(a => a.PhoneNumber == phoneNumber)
-                .Include(a => a.CallingCode)
+                .Include(a => a.CallingCodeObj)
                 .Include(a => a.Contacts)
                     .ThenInclude(c => c.ContactAccount)
                 .SingleOrDefault();
@@ -43,7 +43,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
-                CallingCode = account.CallingCode.CountryCode,
+                CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
@@ -67,7 +67,9 @@ namespace AccountMicroservice.Data.Services.Impl
 
         public async Task<AccountDto> Registration(AccountRegisterDto accountDto)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == accountDto.PhoneNumber).SingleOrDefault();
+            Account account = dbContext.Accounts
+                .Where(a => a.PhoneNumber == accountDto.PhoneNumber && a.CallingCountryCode == accountDto.CallingCountryCode)
+                .SingleOrDefault();
             if (account != null) return null;
 
             account = new Account
@@ -76,7 +78,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = accountDto.Lastname,
                 Email = accountDto.Email,
                 PhoneNumber = accountDto.PhoneNumber,
-                CallingCode = await dbContext.CallingCode.Where(cc => cc.CountryCode == accountDto.CallingCode).SingleOrDefaultAsync()
+                CallingCodeObj = await dbContext.CallingCode.Where(cc => cc.CallingCountryCode == accountDto.CallingCountryCode).SingleOrDefaultAsync()
             };
 
             if (accountDto.Contacts?.Count > 0)
@@ -114,7 +116,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
-                CallingCode = account.CallingCode.CountryCode,
+                CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = token.Value,
                 CreateSession = true,

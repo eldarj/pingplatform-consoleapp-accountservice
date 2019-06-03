@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190603162542_Init")]
+    [Migration("20190603171159_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,7 +26,7 @@ namespace AccountMicroservice.Data.Migrations
 
                     b.Property<string>("AvatarImageUrl");
 
-                    b.Property<int>("CallingCodeId");
+                    b.Property<int>("CallingCountryCode");
 
                     b.Property<string>("CoverImageUrl");
 
@@ -45,7 +45,7 @@ namespace AccountMicroservice.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CallingCodeId");
+                    b.HasIndex("CallingCountryCode");
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
@@ -75,13 +75,13 @@ namespace AccountMicroservice.Data.Migrations
 
             modelBuilder.Entity("AccountMicroservice.Data.Models.CallingCode", b =>
                 {
-                    b.Property<int>("CountryCode");
+                    b.Property<int>("CallingCountryCode");
 
                     b.Property<string>("CountryName");
 
                     b.Property<string>("IsoCode");
 
-                    b.HasKey("CountryCode");
+                    b.HasKey("CallingCountryCode");
 
                     b.ToTable("CallingCode");
                 });
@@ -107,9 +107,9 @@ namespace AccountMicroservice.Data.Migrations
 
             modelBuilder.Entity("AccountMicroservice.Data.Models.Account", b =>
                 {
-                    b.HasOne("AccountMicroservice.Data.Models.CallingCode", "CallingCode")
+                    b.HasOne("AccountMicroservice.Data.Models.CallingCode", "CallingCodeObj")
                         .WithMany()
-                        .HasForeignKey("CallingCodeId")
+                        .HasForeignKey("CallingCountryCode")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

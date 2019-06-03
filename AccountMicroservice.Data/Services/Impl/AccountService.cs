@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using AccountMicroservice.Data;
 using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +57,7 @@ namespace AccountMicroservice.Data.Services.Impl
         public async Task<AccountDto> UpdateAvatar(AccountDto accountDto)
         {
             var account = dbContext.Accounts
-                .Include(a => a.CallingCode)
+                .Include(a => a.CallingCodeObj)
                 .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
                 .SingleOrDefault();
 
@@ -76,7 +74,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
-                CallingCode = account.CallingCode.CountryCode,
+                CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
@@ -87,7 +85,7 @@ namespace AccountMicroservice.Data.Services.Impl
         public async Task<AccountDto> UpdateCover(AccountDto accountDto)
         {
             var account = dbContext.Accounts
-                .Include(a => a.CallingCode)
+                .Include(a => a.CallingCodeObj)
                 .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
                 .SingleOrDefault();
             if (account == null) return null;
@@ -103,7 +101,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
-                CallingCode = account.CallingCode.CountryCode,
+                CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
@@ -115,7 +113,7 @@ namespace AccountMicroservice.Data.Services.Impl
         public async Task<AccountDto> Update(AccountDto accountDto)
         {
             var account = dbContext.Accounts
-                .Include(a => a.CallingCode)
+                .Include(a => a.CallingCodeObj)
                 .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
                 .SingleOrDefault();
             if (account == null) return null;
@@ -134,7 +132,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
-                CallingCode = account.CallingCode.CountryCode,
+                CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 CreateSession = true
@@ -146,7 +144,7 @@ namespace AccountMicroservice.Data.Services.Impl
             return await dbContext.CallingCode
                 .Select(cc => new CallingCodeDto
                 {
-                    PrefixCode = cc.CountryCode,
+                    CallingCountryCode = cc.CallingCountryCode,
                     CountryName = cc.CountryName,
                     IsoCode = cc.IsoCode
                 })
