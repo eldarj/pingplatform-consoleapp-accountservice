@@ -13,5 +13,6 @@ namespace AccountMicroservice.Data.Models
         public virtual Account Account { get; set; }
         public int ContactAccountId { get; set; }
         public virtual Account ContactAccount { get; set; }
+        public bool IsFavorite { get; set; } = false;
     }
 }

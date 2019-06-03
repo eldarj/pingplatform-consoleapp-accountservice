@@ -9,6 +9,19 @@ namespace AccountMicroservice.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "CallingCode",
+                columns: table => new
+                {
+                    CountryCode = table.Column<int>(nullable: false),
+                    CountryName = table.Column<string>(nullable: true),
+                    IsoCode = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CallingCode", x => x.CountryCode);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -21,11 +34,18 @@ namespace AccountMicroservice.Data.Migrations
                     DateRegistered = table.Column<DateTime>(nullable: false),
                     AvatarImageUrl = table.Column<string>(nullable: true),
                     CoverImageUrl = table.Column<string>(nullable: true),
-                    DataSpaceDirName = table.Column<string>(nullable: true)
+                    DataSpaceDirName = table.Column<string>(nullable: true),
+                    CallingCodeId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Accounts_CallingCode_CallingCodeId",
+                        column: x => x.CallingCodeId,
+                        principalTable: "CallingCode",
+                        principalColumn: "CountryCode",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -57,7 +77,8 @@ namespace AccountMicroservice.Data.Migrations
                     AccountId = table.Column<int>(nullable: false),
                     ContactAccountId = table.Column<int>(nullable: false),
                     DateAdded = table.Column<DateTime>(nullable: false),
-                    ContactName = table.Column<string>(nullable: true)
+                    ContactName = table.Column<string>(nullable: true),
+                    IsFavorite = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,6 +96,11 @@ namespace AccountMicroservice.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Accounts_CallingCodeId",
+                table: "Accounts",
+                column: "CallingCodeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_PhoneNumber",
@@ -103,6 +129,9 @@ namespace AccountMicroservice.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "CallingCode");
         }
     }
 }

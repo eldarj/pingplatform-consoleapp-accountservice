@@ -30,6 +30,7 @@ namespace AccountMicroservice.Data.Services.Impl
         {
             var account = dbContext.Accounts
                 .Where(a => a.PhoneNumber == phoneNumber)
+                .Include(a => a.CallingCode)
                 .Include(a => a.Contacts)
                     .ThenInclude(c => c.ContactAccount)
                 .SingleOrDefault();
@@ -42,20 +43,25 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
+                CallingCode = account.CallingCode.CountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
                 CoverImageUrl = account.CoverImageUrl,
                 CreateSession = true,
-                Contacts = account.Contacts?.Select(c => new ContactDto
-                {
-                    DateAdded = c.DateAdded,
-                    ContactName = c.ContactName,
-                    AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
-                    CoverImageUrl = c.ContactAccount.CoverImageUrl,
-                    ContactPhoneNumber = c.ContactAccount.PhoneNumber,
-                    ContactAccountId = c.ContactAccountId
-                }).ToList()
+                Contacts = account.Contacts?
+                    .Select(c => new ContactDto
+                    {
+                        DateAdded = c.DateAdded,
+                        ContactName = c.ContactName,
+                        AvatarImageUrl = c.ContactAccount.AvatarImageUrl,
+                        CoverImageUrl = c.ContactAccount.CoverImageUrl,
+                        ContactPhoneNumber = c.ContactAccount.PhoneNumber,
+                        ContactAccountId = c.ContactAccountId,
+                        IsFavorite = c.IsFavorite
+                    })
+                    .OrderBy(c => c.ContactName)
+                    .ToList()
             };
         }
 
@@ -69,13 +75,15 @@ namespace AccountMicroservice.Data.Services.Impl
                 Firstname = accountDto.Firstname,
                 Lastname = accountDto.Lastname,
                 Email = accountDto.Email,
-                PhoneNumber = accountDto.PhoneNumber
+                PhoneNumber = accountDto.PhoneNumber,
+                CallingCode = await dbContext.CallingCode.Where(cc => cc.CountryCode == accountDto.CallingCode).SingleOrDefaultAsync()
             };
 
             if (accountDto.Contacts?.Count > 0)
             {
+                // add as contacts those accounts that exist (TODO: Change to consider country prefix and possible '0' infront of phone number)
                 var dtoContacts = accountDto.Contacts.Select(dto => dto.PhoneNumber).ToList();
-                List<Account> contactsToAdd = dbContext.Accounts
+                List<Account> contactsToAdd = dbContext.Accounts 
                     .Where(a => dtoContacts.Contains(a.PhoneNumber))
                     .ToList();
 
@@ -106,6 +114,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
+                CallingCode = account.CallingCode.CountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = token.Value,
                 CreateSession = true,

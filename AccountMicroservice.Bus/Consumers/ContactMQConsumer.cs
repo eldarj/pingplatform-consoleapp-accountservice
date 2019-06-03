@@ -96,11 +96,11 @@ namespace AccountMicroservice.MessageBus.Consumers
 
             if (await accountService.AddContact(contactDto))
             {
-                logger.LogInformation($"-- Contact: {contactDto.ContactPhoneNumber} added to db, for account: {contactDto.PhoneNumber}. ");
+                logger.LogInformation($"-- Contact: {contactDto.ContactPhoneNumber} saved to db, for account: {contactDto.PhoneNumber}. ");
             }
             else
             {
-                logger.LogError($"-- Couldn't add contact: {contactDto.ContactPhoneNumber} to db, for account: {contactDto.PhoneNumber}. ");
+                logger.LogError($"-- Couldn't save contact: {contactDto.ContactPhoneNumber} to db, for account: {contactDto.PhoneNumber}. ");
             }
         }
 

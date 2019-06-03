@@ -34,15 +34,22 @@ namespace AccountMicroservice.Data.Services.Impl
 
             if (contactAccount == null) return false; // Implement adding contacts that are not currently registered
 
-            Contact contact = new Contact
-            {
-                AccountId = account.Id,
-                ContactAccountId = contactAccount.Id,
-                ContactName = contactDto.ContactName,
-                DateAdded = contactDto.DateAdded
-            };
+            Contact contact = await dbContext.Contacts
+                .Where(c => c.Account.PhoneNumber == contactDto.PhoneNumber && c.ContactAccount.PhoneNumber == contactDto.ContactPhoneNumber)
+                .SingleOrDefaultAsync();
 
-            dbContext.Contacts.Add(contact);
+            if (contact == null)
+            {
+                contact = new Contact();
+                dbContext.Contacts.Add(contact);
+            }
+
+            contact.AccountId = account.Id;
+            contact.ContactAccountId = contactAccount.Id;
+            contact.ContactName = contactDto.ContactName;
+            contact.DateAdded = contactDto.DateAdded;
+            contact.IsFavorite = contactDto.IsFavorite;
+
             await dbContext.SaveChangesAsync();
 
             return true;
@@ -51,7 +58,11 @@ namespace AccountMicroservice.Data.Services.Impl
         // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?
         public async Task<AccountDto> UpdateAvatar(AccountDto accountDto)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == accountDto.PhoneNumber).SingleOrDefault();
+            var account = dbContext.Accounts
+                .Include(a => a.CallingCode)
+                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
+                .SingleOrDefault();
+
             if (account == null) return null;
 
             account.AvatarImageUrl = accountDto.AvatarImageUrl;
@@ -65,6 +76,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
+                CallingCode = account.CallingCode.CountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
@@ -74,7 +86,10 @@ namespace AccountMicroservice.Data.Services.Impl
         }
         public async Task<AccountDto> UpdateCover(AccountDto accountDto)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == accountDto.PhoneNumber).SingleOrDefault();
+            var account = dbContext.Accounts
+                .Include(a => a.CallingCode)
+                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
+                .SingleOrDefault();
             if (account == null) return null;
 
             account.CoverImageUrl = accountDto.CoverImageUrl;
@@ -88,6 +103,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
+                CallingCode = account.CallingCode.CountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
@@ -98,7 +114,10 @@ namespace AccountMicroservice.Data.Services.Impl
 
         public async Task<AccountDto> Update(AccountDto accountDto)
         {
-            var account = dbContext.Accounts.Where(a => a.PhoneNumber == accountDto.PhoneNumber).SingleOrDefault();
+            var account = dbContext.Accounts
+                .Include(a => a.CallingCode)
+                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
+                .SingleOrDefault();
             if (account == null) return null;
 
             account.Firstname = accountDto.Firstname;
@@ -115,11 +134,23 @@ namespace AccountMicroservice.Data.Services.Impl
                 Lastname = account.Lastname,
                 Email = account.Email,
                 PhoneNumber = account.PhoneNumber,
+                CallingCode = account.CallingCode.CountryCode,
                 DateRegistered = account.DateRegistered,
                 Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
                 CreateSession = true
             };
         }
 
+        public async Task<List<CallingCodeDto>> GetCallingCodes()
+        {
+            return await dbContext.CallingCode
+                .Select(cc => new CallingCodeDto
+                {
+                    PrefixCode = cc.CountryCode,
+                    CountryName = cc.CountryName,
+                    IsoCode = cc.IsoCode
+                })
+                .ToListAsync();
+        }
     }
 }

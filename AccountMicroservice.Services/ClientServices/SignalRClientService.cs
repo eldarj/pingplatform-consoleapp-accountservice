@@ -13,6 +13,7 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Threading.Channels;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
+using Ping.Commons.Dtos.Models.Auth;
 
 namespace AccountMicroservice.SignalR.ClientServices
 {
@@ -181,6 +182,23 @@ namespace AccountMicroservice.SignalR.ClientServices
                     logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). " +
                         $"Requested by: {appId} - sending back error message.");
                     await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
+                });
+
+                hubConnectionAuth.On<string>("RequestCallingCodes", async (appId) =>
+                {
+                    logger.LogInformation($"-- {appId} requesting CallingCodes.");
+
+                    List<CallingCodeDto> callingCodes = await accountService.GetCallingCodes();
+                    if (callingCodes != null)
+                    {
+                        logger.LogInformation($"-- {appId} requesting CallingCodes (Success). " +
+                            $"Returning data to hub.");
+
+                        await hubConnectionAuth.SendAsync("ResponseCallingCodes", appId, callingCodes);
+                        return;
+                    }
+
+                    logger.LogInformation($"-- Couldn't fetch list of calling codes from db.");
                 });
 
                 hubConnectionAuth.On<string, AccountLoginDto>("RequestAuthentication", async (appId, accountRequest) =>

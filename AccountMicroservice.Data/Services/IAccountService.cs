@@ -13,5 +13,6 @@ namespace AccountMicroservice.Data.Services
         Task<AccountDto> UpdateCover(AccountDto accountDto);
         Task<AccountDto> Update(AccountDto accountDto);
         Task<bool> AddContact(ContactDto contactDto);
+        Task<List<CallingCodeDto>> GetCallingCodes();
     }
 }

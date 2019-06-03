@@ -22,6 +22,10 @@ namespace AccountMicroservice.Data.Models
 
         public string DataSpaceDirName { get; set; }
 
+        [ForeignKey("CallingCode")]
+        public int CallingCodeId { get; set; }
+        public virtual CallingCode CallingCode { get; set; }
+
         [InverseProperty("Account")]
         public virtual ICollection<Contact> Contacts { get; set; }
 

@@ -12,6 +12,7 @@ namespace AccountMicroservice.Data
         public DbSet<Account> Accounts { get; set; }
         public DbSet<AuthToken> AuthTokens { get; set; }
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<CallingCode> CallingCode { get; set; }
         #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

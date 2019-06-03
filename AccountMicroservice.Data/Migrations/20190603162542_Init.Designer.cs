@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountMicroservice.Data.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20190512214513_Init")]
+    [Migration("20190603162542_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,8 @@ namespace AccountMicroservice.Data.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("AvatarImageUrl");
+
+                    b.Property<int>("CallingCodeId");
 
                     b.Property<string>("CoverImageUrl");
 
@@ -42,6 +44,8 @@ namespace AccountMicroservice.Data.Migrations
                         .IsRequired();
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CallingCodeId");
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
@@ -69,6 +73,19 @@ namespace AccountMicroservice.Data.Migrations
                     b.ToTable("AuthTokens");
                 });
 
+            modelBuilder.Entity("AccountMicroservice.Data.Models.CallingCode", b =>
+                {
+                    b.Property<int>("CountryCode");
+
+                    b.Property<string>("CountryName");
+
+                    b.Property<string>("IsoCode");
+
+                    b.HasKey("CountryCode");
+
+                    b.ToTable("CallingCode");
+                });
+
             modelBuilder.Entity("AccountMicroservice.Data.Models.Contact", b =>
                 {
                     b.Property<int>("AccountId");
@@ -79,11 +96,21 @@ namespace AccountMicroservice.Data.Migrations
 
                     b.Property<DateTime>("DateAdded");
 
+                    b.Property<bool>("IsFavorite");
+
                     b.HasKey("AccountId", "ContactAccountId");
 
                     b.HasIndex("ContactAccountId");
 
                     b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("AccountMicroservice.Data.Models.Account", b =>
+                {
+                    b.HasOne("AccountMicroservice.Data.Models.CallingCode", "CallingCode")
+                        .WithMany()
+                        .HasForeignKey("CallingCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("AccountMicroservice.Data.Models.AuthToken", b =>
