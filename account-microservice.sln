@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.SignalR", "AccountMicroservice.Services\AccountMicroservice.SignalR.csproj", "{20E42A0D-2EA6-42A4-9402-874038E97025}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.MessageBus", "AccountMicroservice.Bus\AccountMicroservice.MessageBus.csproj", "{02852475-41B8-43D7-AA3B-B1234645B6C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice.Data", "AccountMicroservice.Data\AccountMicroservice.Data.csproj", "{790E7412-2DF7-431F-B844-1460F359BBE9}"
@@ -13,16 +11,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountMicroservice", "Acco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.Dtos", "..\..\api\api-gateway\Ping.Commons.Dtos\Ping.Commons.Dtos.csproj", "{70A674FB-44F4-4480-B845-398DEC9F0B02}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.Settings", "..\..\api\api-gateway\Ping.Commons.Settings\Ping.Commons.Settings.csproj", "{D68E6407-AAE1-42F6-AF26-86A236BA489C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{20E42A0D-2EA6-42A4-9402-874038E97025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{20E42A0D-2EA6-42A4-9402-874038E97025}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20E42A0D-2EA6-42A4-9402-874038E97025}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{20E42A0D-2EA6-42A4-9402-874038E97025}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02852475-41B8-43D7-AA3B-B1234645B6C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{02852475-41B8-43D7-AA3B-B1234645B6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02852475-41B8-43D7-AA3B-B1234645B6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{70A674FB-44F4-4480-B845-398DEC9F0B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70A674FB-44F4-4480-B845-398DEC9F0B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70A674FB-44F4-4480-B845-398DEC9F0B02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

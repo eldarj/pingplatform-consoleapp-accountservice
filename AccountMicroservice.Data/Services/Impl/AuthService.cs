@@ -3,6 +3,7 @@ using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
 using Microsoft.EntityFrameworkCore;
 using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,15 +22,10 @@ namespace AccountMicroservice.Data.Services.Impl
         }
 
         // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?
-        public AccountDto Authenticate(AccountDto accountDto)
-        {
-            return this.Authenticate(accountDto.PhoneNumber);
-        }
-
-        public AccountDto Authenticate(string phoneNumber)
+        public AccountDto Authenticate(AccountDto accountDto, string secret)
         {
             var account = dbContext.Accounts
-                .Where(a => a.PhoneNumber == phoneNumber)
+                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
                 .Include(a => a.CallingCodeObj)
                 .Include(a => a.Contacts)
                     .ThenInclude(c => c.ContactAccount)
@@ -37,6 +33,7 @@ namespace AccountMicroservice.Data.Services.Impl
 
             if (account == null) return null;
 
+            // Generate 
             return new AccountDto
             {
                 Firstname = account.Firstname,
@@ -45,7 +42,8 @@ namespace AccountMicroservice.Data.Services.Impl
                 PhoneNumber = account.PhoneNumber,
                 CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
-                Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
+                //Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
+                Token = JWTokenHandler.GenerateToken(account.PhoneNumber, secret),
                 AvatarImageUrl = account.AvatarImageUrl,
                 CoverImageUrl = account.CoverImageUrl,
                 CreateSession = true,

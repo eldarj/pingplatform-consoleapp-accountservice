@@ -16,10 +16,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\api\api-gateway\Ping.Commons.Dtos\Ping.Commons.Dtos.csproj" />
+    <ProjectReference Include="..\..\..\api\api-gateway\Ping.Commons.Settings\Ping.Commons.Settings.csproj" />
   </ItemGroup>
 
 </Project>
