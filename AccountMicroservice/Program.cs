@@ -5,13 +5,11 @@ using System.Threading.Tasks;
 
 using AccountMicroservice.Data;
 
-using AccountMicroservice.SignalR.ClientServices;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.EntityFrameworkCore;
 
 using AccountMicroservice.Data.Services;
@@ -19,6 +17,11 @@ using AccountMicroservice.Data.Services.Impl;
 using AccountMicroservice.MessageBus.Publishers;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
 using AccountMicroservice.MessageBus.Consumers;
+using Ping.Commons.Settings;
+using AccountMicroservice.Settings;
+using AccountMicroservice.HostedServices;
+using AccountMicroservice.SignalRServices.Interfaces;
+using AccountMicroservice.SignalRServices;
 
 namespace AccountMicroservice
 {
@@ -53,17 +56,20 @@ namespace AccountMicroservice
                     //            a.MigrationsAssembly("AccountMicroservice.Data"));
                     //});
 
-                    var root = Directory.GetCurrentDirectory();
-                    IFileProvider physicalProvider = new PhysicalFileProvider(root);
-                    services.AddSingleton<IFileProvider>(physicalProvider);
+                    // Jwt authentication// configure strongly typed settings objects
+                    services.Configure<SecuritySettings>(hostContext.Configuration.GetSection("SecuritySettings"));
+                    services.Configure<GatewayBaseSettings>(hostContext.Configuration.GetSection("GatewayBaseSettings"));
 
                     services.AddSignalR();
 
-                    services.AddHostedService<SignalRClientService>();
+                    services.AddHostedService<ConsoleHostedService>();
                     services.AddHostedService<ContactMQConsumer>();
 
                     services.AddScoped<IAuthService, AuthService>();
                     services.AddScoped<IAccountService, AccountService>();
+
+                    services.AddScoped<IAuthHubClientService, AuthHubClientService>();
+                    services.AddScoped<IAccountHubClientService, AccountHubClientService>();
 
                     services.AddScoped<IAccountMQPublisher, AccountMQPublisher>();
                 })
