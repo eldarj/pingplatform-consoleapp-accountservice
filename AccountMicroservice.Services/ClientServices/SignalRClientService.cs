@@ -14,6 +14,9 @@ using System.IO;
 using System.Threading.Channels;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
 using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Wrappers.Response;
+using Ping.Commons.Settings;
+using Microsoft.Extensions.Options;
 
 namespace AccountMicroservice.SignalR.ClientServices
 {
@@ -27,7 +30,7 @@ namespace AccountMicroservice.SignalR.ClientServices
         private readonly HubConnection hubConnectionAuth;
         private readonly HubConnection hubConnectionAccount;
 
-        private readonly IFileProvider fileProvider;
+        private readonly SecuritySettings securitySettings;
 
         private readonly IAccountMQPublisher accountMQPublisher;
 
@@ -36,24 +39,30 @@ namespace AccountMicroservice.SignalR.ClientServices
             IApplicationLifetime applicationLifetime,
             IAuthService authService,
             IAccountService accountService,
-            IFileProvider fileProvider,
-            IAccountMQPublisher accountMQPublisher)
+            IAccountMQPublisher accountMQPublisher,
+            IOptions<SecuritySettings> securityOptions)
         {
             this.accountService = accountService;
             this.authService = authService;
             this.logger = logger;
+
+            this.securitySettings = securityOptions.Value;
+
             this.appLifetime = applicationLifetime;
-            this.fileProvider = fileProvider;
+
             this.accountMQPublisher = accountMQPublisher;
 
             // Setup SignalR Hub connection
+            string accessToken = JWTokenHandler.GenerateToken(securitySettings.ClientIdentifier, securitySettings.Secret);
+
             hubConnectionAuth = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44380/authhub?groupName=accountMicroservice")
+                .WithUrl("https://localhost:44380/authhub",
+                    options => options.AccessTokenProvider = () => Task.FromResult<string>(accessToken))
                 .Build();
 
-            // TODO: Create a wrapper/helper service for handling hubConnections
             hubConnectionAccount = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44380/accounthub?groupName=accountMicroservice")
+                .WithUrl("https://localhost:44380/accounthub",
+                    options => options.AccessTokenProvider = () => Task.FromResult<string>(accessToken))
                 .Build();
         }
 
@@ -89,134 +98,120 @@ namespace AccountMicroservice.SignalR.ClientServices
                     logger.LogInformation("AccountMicroservice connected to AuthHub successfully (OnStarted)");
                 });
 
-                await hubConnectionAccount.StartAsync().ContinueWith(t =>
+                //await hubConnectionAccount.StartAsync().ContinueWith(t =>
+                //{
+                //    if (t.IsFaulted)
+                //    {
+                //        logger.LogInformation("-- Couln't connect to signalR AccountHub (OnStarted)");
+                //        return;
+                //    }
+                //    logger.LogInformation("AccountMicroservice connected to AccountHub successfully (OnStarted)");
+                //});
+
+                //hubConnectionAccount.On<string, string, string>("CoverUpload", async (appId, phoneNumber, imgUrl) =>
+                //{
+                //    logger.LogInformation($"-- {appId} requesting CoverUpload. for {phoneNumber}.");
+
+                //    //var authedAccount = authService.Authenticate(phoneNumber);
+                //    //if (authedAccount != null)
+                //    //{
+                //    //    logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
+                //    //        $"Proceeding to cover upload.");
+
+                //    //    authedAccount.CoverImageUrl = imgUrl;
+
+                //    //    AccountDto accountResponse = await accountService.UpdateCover(authedAccount);
+                //    //    if (accountResponse != null)
+                //    //    {
+                //    //        await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
+                //    //        return;
+                //    //    }
+                //    //}
+
+                //    //logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
+                //    //    $"Requested by: {appId} - sending back error message.");
+                //    //await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
+                //});
+
+                //hubConnectionAccount.On<string, string, string>("AvatarUpload", async (appId, phoneNumber, imgUrl) =>
+                //{
+                //    logger.LogInformation($"-- {appId} requesting AvatarUpload. for {phoneNumber}.");
+
+                //    //var authedAccount = authService.Authenticate(phoneNumber);
+                //    //if (authedAccount != null)
+                //    //{
+                //    //    logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
+                //    //        $"Proceeding to avatar upload.");
+
+                //    //    authedAccount.AvatarImageUrl = imgUrl;
+
+                //    //    AccountDto accountResponse = await accountService.UpdateAvatar(authedAccount);
+                //    //    if (accountResponse != null)
+                //    //    {
+                //    //        await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
+                //    //        return;
+                //    //    }
+                //    //}
+
+                //    //logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
+                //    //    $"Requested by: {appId} - sending back error message.");
+                //    //await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
+                //});
+
+                //hubConnectionAccount.On<string, AccountDto>("UpdateProfile", async (appId, accountRequest) =>
+                //{
+                //    logger.LogInformation($"-- {appId} requesting ProfileUpdate. for {accountRequest.PhoneNumber}.");
+
+                //    //var authedAccount = authService.Authenticate(accountRequest.PhoneNumber);
+                //    //if (authedAccount != null)
+                //    //{
+                //    //    logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). " +
+                //    //        $"Proceeding to profile update.");
+
+                //    //    AccountDto accountResponse = await accountService.Update(accountRequest);
+                //    //    if (accountResponse != null)
+                //    //    {
+                //    //        await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
+                //    //        return;
+                //    //    }
+                //    //}
+
+                //    //logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). " +
+                //    //    $"Requested by: {appId} - sending back error message.");
+                //    //await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
+                //});
+
+                hubConnectionAuth.On<string>("RequestCallingCodes", async (appIdentifier) =>
                 {
-                    if (t.IsFaulted)
-                    {
-                        logger.LogInformation("-- Couln't connect to signalR AccountHub (OnStarted)");
-                        return;
-                    }
-                    logger.LogInformation("AccountMicroservice connected to AccountHub successfully (OnStarted)");
-                });
-
-                // TODO: Remove this here and from the hub
-                IFileInfo meta = fileProvider.GetFileInfo("files/file.txt");
-                if (meta.Exists)
-                {
-                    using(var fs = meta.CreateReadStream())
-                    {
-                        byte[] readBytes = File.ReadAllBytes(meta.PhysicalPath);
-                        await hubConnectionAuth.SendAsync("FileReceivedTest", "test");
-                    }
-                }
-
-
-                hubConnectionAccount.On<string, string, string>("CoverUpload", async (appId, phoneNumber, imgUrl) =>
-                {
-                    logger.LogInformation($"-- {appId} requesting CoverUpload. for {phoneNumber}.");
-
-                    var authedAccount = authService.Authenticate(phoneNumber);
-                    if (authedAccount != null)
-                    {
-                        logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
-                            $"Proceeding to cover upload.");
-
-                        authedAccount.CoverImageUrl = imgUrl;
-
-                        AccountDto accountResponse = await accountService.UpdateCover(authedAccount);
-                        if (accountResponse != null)
-                        {
-                            await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
-                            return;
-                        }
-                    }
-
-                    logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
-                        $"Requested by: {appId} - sending back error message.");
-                    await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
-                });
-
-                hubConnectionAccount.On<string, string, string>("AvatarUpload", async (appId, phoneNumber, imgUrl) =>
-                {
-                    logger.LogInformation($"-- {appId} requesting AvatarUpload. for {phoneNumber}.");
-
-                    var authedAccount = authService.Authenticate(phoneNumber);
-                    if (authedAccount != null)
-                    {
-                        logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
-                            $"Proceeding to avatar upload.");
-
-                        authedAccount.AvatarImageUrl = imgUrl;
-
-                        AccountDto accountResponse = await accountService.UpdateAvatar(authedAccount);
-                        if (accountResponse != null)
-                        {
-                            await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
-                            return;
-                        }
-                    }
-
-                    logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
-                        $"Requested by: {appId} - sending back error message.");
-                    await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
-                });
-
-                hubConnectionAccount.On<string, AccountDto>("UpdateProfile", async (appId, accountRequest) =>
-                {
-                    logger.LogInformation($"-- {appId} requesting ProfileUpdate. for {accountRequest.PhoneNumber}.");
-
-                    var authedAccount = authService.Authenticate(accountRequest.PhoneNumber);
-                    if (authedAccount != null)
-                    {
-                        logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). " +
-                            $"Proceeding to profile update.");
-
-                        AccountDto accountResponse = await accountService.Update(accountRequest);
-                        if (accountResponse != null)
-                        {
-                            await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
-                            return;
-                        }
-                    }
-
-                    logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). " +
-                        $"Requested by: {appId} - sending back error message.");
-                    await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
-                });
-
-                hubConnectionAuth.On<string>("RequestCallingCodes", async (appId) =>
-                {
-                    logger.LogInformation($"-- {appId} requesting CallingCodes.");
+                    logger.LogInformation("[{appIdentifier}] requesting CallingCodes.");
 
                     List<CallingCodeDto> callingCodes = await accountService.GetCallingCodes();
                     if (callingCodes != null)
                     {
-                        logger.LogInformation($"-- {appId} requesting CallingCodes (Success). " +
-                            $"Returning data to hub.");
+                        logger.LogInformation($"-- {appIdentifier} requesting CallingCodes (SUCCESS) - Returning data to hub.");
 
-                        await hubConnectionAuth.SendAsync("ResponseCallingCodes", appId, callingCodes);
+                        await hubConnectionAuth.SendAsync("ResponseCallingCodes", appIdentifier, callingCodes);
                         return;
                     }
 
-                    logger.LogInformation($"-- Couldn't fetch list of calling codes from db.");
+                    logger.LogInformation($"-- {appIdentifier} requesting CallingCodes (FAIL). ");
                 });
 
-                hubConnectionAuth.On<string, AccountDto>("RequestAuthentication", async (appId, accountRequest) =>
+                hubConnectionAuth.On<AccountDto>("RequestAuthentication", async (accountRequest) =>
                 {
-                    logger.LogInformation($"-- {appId} requesting auth. for {accountRequest.PhoneNumber}.");
+                    logger.LogInformation($"-- {accountRequest.PhoneNumber} requesting auth.");
 
-                    var authedAccount = authService.Authenticate(accountRequest);
+                    var authedAccount = authService.Authenticate(accountRequest, securitySettings.Secret);
                     if (authedAccount != null)
                     {
-                        logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). " +
-                            $"Requested by: {appId} - sending back data.");
-                        await hubConnectionAuth.SendAsync("AuthenticationDone", appId, authedAccount);
+                        logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
+                        await hubConnectionAuth.SendAsync("AuthenticationDone", authedAccount);
                     }
                     else
                     {
-                        logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). " +
-                            $"Requested by: {appId} - sending back error message.");
-                        await hubConnectionAuth.SendAsync("AuthenticationFailed", appId, $"Authentication failed for: {appId}");
+                        logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
+                        await hubConnectionAuth.SendAsync("AuthenticationFailed", 
+                            new ResponseDto<AccountDto> { Dto = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
                     }
                 });
 
