@@ -21,7 +21,7 @@ namespace AccountMicroservice.Data.Services.Impl
         }
 
         // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?
-        public AccountDto Authenticate(AccountLoginDto accountDto)
+        public AccountDto Authenticate(AccountDto accountDto)
         {
             return this.Authenticate(accountDto.PhoneNumber);
         }
@@ -65,7 +65,7 @@ namespace AccountMicroservice.Data.Services.Impl
             };
         }
 
-        public async Task<AccountDto> Registration(AccountRegisterDto accountDto)
+        public async Task<AccountDto> Registration(AccountDto accountDto)
         {
             Account account = dbContext.Accounts
                 .Where(a => a.PhoneNumber == accountDto.PhoneNumber && a.CallingCountryCode == accountDto.CallingCountryCode)
@@ -84,7 +84,7 @@ namespace AccountMicroservice.Data.Services.Impl
             if (accountDto.Contacts?.Count > 0)
             {
                 // add as contacts those accounts that exist (TODO: Change to consider country prefix and possible '0' infront of phone number)
-                var dtoContacts = accountDto.Contacts.Select(dto => dto.PhoneNumber).ToList();
+                var dtoContacts = accountDto.Contacts.Select(dto => dto.ContactPhoneNumber).ToList();
                 List<Account> contactsToAdd = dbContext.Accounts 
                     .Where(a => dtoContacts.Contains(a.PhoneNumber))
                     .ToList();
@@ -93,7 +93,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 {
                     Account = account,
                     ContactAccountId = a.Id,
-                    ContactName = accountDto.Contacts.SingleOrDefault(c => c.PhoneNumber == a.PhoneNumber)?.ContactName
+                    ContactName = accountDto.Contacts.SingleOrDefault(c => c.ContactPhoneNumber == a.PhoneNumber)?.ContactName
                 })
                 .ToList();
             }

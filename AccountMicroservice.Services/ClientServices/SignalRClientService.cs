@@ -201,7 +201,7 @@ namespace AccountMicroservice.SignalR.ClientServices
                     logger.LogInformation($"-- Couldn't fetch list of calling codes from db.");
                 });
 
-                hubConnectionAuth.On<string, AccountLoginDto>("RequestAuthentication", async (appId, accountRequest) =>
+                hubConnectionAuth.On<string, AccountDto>("RequestAuthentication", async (appId, accountRequest) =>
                 {
                     logger.LogInformation($"-- {appId} requesting auth. for {accountRequest.PhoneNumber}.");
 
@@ -220,7 +220,7 @@ namespace AccountMicroservice.SignalR.ClientServices
                     }
                 });
 
-                hubConnectionAuth.On<string, AccountRegisterDto>("RequestRegistration", async (appId, accountRequest) =>
+                hubConnectionAuth.On<string, AccountDto>("RequestRegistration", async (appId, accountRequest) =>
                 {
                     logger.LogInformation($"-- {appId} requesting registration for {accountRequest.PhoneNumber}.");
 

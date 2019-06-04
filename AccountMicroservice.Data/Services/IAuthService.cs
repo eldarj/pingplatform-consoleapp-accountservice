@@ -8,8 +8,8 @@ namespace AccountMicroservice.Data.Services
 {
     public interface IAuthService
     {
-        AccountDto Authenticate(AccountLoginDto account);
+        AccountDto Authenticate(AccountDto account);
         AccountDto Authenticate(string phoneNumber);
-        Task<AccountDto> Registration(AccountRegisterDto accountDto);
+        Task<AccountDto> Registration(AccountDto accountDto);
     }
 }
