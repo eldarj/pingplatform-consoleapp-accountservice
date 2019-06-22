@@ -13,10 +13,12 @@ namespace AccountMicroservice.SignalRServices.Base
     {
         protected readonly HubConnection hubConnection;
 
+        protected readonly SecuritySettings securitySettings;
+
         public BaseHubClientService(IOptions<GatewayBaseSettings> gatewayBaseOptions, IOptions<SecuritySettings> securityOptions, string hubEndpoint)
         {
+            this.securitySettings = securityOptions.Value;
             GatewayBaseSettings gatewayBaseSettings = gatewayBaseOptions.Value;
-            SecuritySettings securitySettings = securityOptions.Value;
 
             string connectionBaseUrl = gatewayBaseSettings.Scheme + "://" + gatewayBaseSettings.Url + ":" + gatewayBaseSettings.Port;
 

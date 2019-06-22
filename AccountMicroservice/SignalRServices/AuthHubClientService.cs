@@ -10,6 +10,8 @@ using AccountMicroservice.Data.Services;
 using Microsoft.Extensions.Logging;
 using AccountMicroservice.SignalRServices.Interfaces;
 using AccountMicroservice.SignalRServices.Base;
+using Api.DtoModels.Auth;
+using Ping.Commons.Dtos.Models.Wrappers.Response;
 
 namespace AccountMicroservice.SignalRServices
 {
@@ -18,16 +20,19 @@ namespace AccountMicroservice.SignalRServices
         private static readonly string HUB_ENDPOINT = "authhub";
 
         private readonly ILogger logger;
+        private readonly IAuthService authService;
         private readonly IAccountService accountService;
         //private readonly IAccountMQPublisher accountMQPublisher;
 
         public AuthHubClientService(IOptions<GatewayBaseSettings> gatewayBaseOptions, 
             IOptions<SecuritySettings> securityOptions,
             IAccountService accountService,
+            IAuthService authService,
             ILogger<AuthHubClientService> logger)
             : base(gatewayBaseOptions, securityOptions, HUB_ENDPOINT)
         {
             this.logger = logger;
+            this.authService = authService;
             this.accountService = accountService;
         }
 
@@ -48,7 +53,7 @@ namespace AccountMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
-            hubConnection.On<string>("RequestCallingCodes", async (appIdentifier) =>
+            base.hubConnection.On("RequestCallingCodes", async (string appIdentifier) =>
             {
                 logger.LogInformation($"[{appIdentifier}] requesting CallingCodes.");
 
@@ -57,30 +62,30 @@ namespace AccountMicroservice.SignalRServices
                 {
                     logger.LogInformation($"-- {appIdentifier} requesting CallingCodes (SUCCESS) - Returning data to hub.");
 
-                    await hubConnection.SendAsync("ResponseCallingCodes", appIdentifier, callingCodes);
+                    await base.hubConnection.SendAsync("ResponseCallingCodes", appIdentifier, callingCodes);
                     return;
                 }
 
                 logger.LogInformation($"[{appIdentifier}] requesting CallingCodes (FAIL). ");
             });
 
-            //hubConnectionAuth.On<AccountDto>("RequestAuthentication", async (accountRequest) =>
-            //{
-            //    logger.LogInformation($"-- {accountRequest.PhoneNumber} requesting auth.");
+            hubConnection.On<AccountDto>("RequestAuthentication", async (accountRequest) =>
+            {
+                logger.LogInformation($"-- {accountRequest.PhoneNumber} requesting auth.");
 
-            //    var authedAccount = authService.Authenticate(accountRequest, securitySettings.Secret);
-            //    if (authedAccount != null)
-            //    {
-            //        logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
-            //        await hubConnectionAuth.SendAsync("AuthenticationDone", authedAccount);
-            //    }
-            //    else
-            //    {
-            //        logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
-            //        await hubConnectionAuth.SendAsync("AuthenticationFailed", 
-            //            new ResponseDto<AccountDto> { Dto = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
-            //    }
-            //});
+                var authedAccount = authService.Authenticate(accountRequest, base.securitySettings.Secret);
+                if (authedAccount != null)
+                {
+                    logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
+                    await hubConnection.SendAsync("AuthenticationDone", authedAccount);
+                }
+                else
+                {
+                    logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
+                    await hubConnection.SendAsync("AuthenticationFailed",
+                        new ResponseDto<AccountDto> { Dto = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
+                }
+            });
 
             //hubConnectionAuth.On<string, AccountDto>("RequestRegistration", async (appId, accountRequest) =>
             //{

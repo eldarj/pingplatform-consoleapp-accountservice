@@ -42,6 +42,7 @@ namespace AccountMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
+            // TODO: Finish this after implementing AuthHub and ChatHub
             //await hubConnectionAccount.StartAsync().ContinueWith(t =>
             //{
             //    if (t.IsFaulted)
