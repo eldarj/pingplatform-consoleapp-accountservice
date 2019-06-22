@@ -69,20 +69,20 @@ namespace AccountMicroservice.SignalRServices
                 logger.LogInformation($"[{appIdentifier}] requesting CallingCodes (FAIL). ");
             });
 
-            hubConnection.On<AccountDto>("RequestAuthentication", async (accountRequest) =>
+            hubConnection.On<string, AccountDto>("RequestAuthentication", async (appIdentifier, accountRequest) =>
             {
-                logger.LogInformation($"-- {accountRequest.PhoneNumber} requesting auth.");
+                logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} requesting auth.");
 
                 var authedAccount = authService.Authenticate(accountRequest, base.securitySettings.Secret);
                 if (authedAccount != null)
                 {
-                    logger.LogInformation($"-- {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
-                    await hubConnection.SendAsync("AuthenticationDone", authedAccount);
+                    logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
+                    await hubConnection.SendAsync("AuthenticationDone", appIdentifier, authedAccount);
                 }
                 else
                 {
-                    logger.LogInformation($"-- {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
-                    await hubConnection.SendAsync("AuthenticationFailed",
+                    logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
+                    await hubConnection.SendAsync("AuthenticationFailed", appIdentifier,
                         new ResponseDto<AccountDto> { Dto = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
                 }
             });
