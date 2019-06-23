@@ -12,6 +12,7 @@ using AccountMicroservice.SignalRServices.Interfaces;
 using AccountMicroservice.SignalRServices.Base;
 using Api.DtoModels.Auth;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
+using AccountMicroservice.MessageBus.Publishers.Interfaces;
 
 namespace AccountMicroservice.SignalRServices
 {
@@ -22,16 +23,20 @@ namespace AccountMicroservice.SignalRServices
         private readonly ILogger logger;
         private readonly IAuthService authService;
         private readonly IAccountService accountService;
-        //private readonly IAccountMQPublisher accountMQPublisher;
+        private readonly IAccountMQPublisher accountMQPublisher;
 
         public AuthHubClientService(IOptions<GatewayBaseSettings> gatewayBaseOptions, 
             IOptions<SecuritySettings> securityOptions,
             IAccountService accountService,
             IAuthService authService,
+            IAccountMQPublisher accountMQPublisher,
             ILogger<AuthHubClientService> logger)
             : base(gatewayBaseOptions, securityOptions, HUB_ENDPOINT)
         {
             this.logger = logger;
+
+            this.accountMQPublisher = accountMQPublisher;
+
             this.authService = authService;
             this.accountService = accountService;
         }
@@ -42,7 +47,7 @@ namespace AccountMicroservice.SignalRServices
             {
                 if (t.IsFaulted)
                 {
-                    logger.LogInformation("-- Couln't connect to signalR AuthHub (OnStarted)");
+                    logger.LogInformation("-- Couln't connect to SignalR AuthHub (OnStarted)");
                     return;
                 }
                 logger.LogInformation("AccountMicroservice connected to AuthHub successfully (OnStarted)");
@@ -87,32 +92,28 @@ namespace AccountMicroservice.SignalRServices
                 }
             });
 
-            //hubConnectionAuth.On<string, AccountDto>("RequestRegistration", async (appId, accountRequest) =>
-            //{
-            //    logger.LogInformation($"-- {appId} requesting registration for {accountRequest.PhoneNumber}.");
+            hubConnection.On<string, AccountDto>("RequestRegistration", async (appIdentifier, accountRequest) =>
+            {
+                logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} requesting registration.");
 
-            //    AccountDto newAccount = await authService.Registration(accountRequest);
-            //    if (newAccount != null)
-            //    {
-            //        // Log to microservice log
-            //        logger.LogInformation($"-- {accountRequest.PhoneNumber} registered (Success). " +
-            //            $"Requested by: {appId} - sending back data.");
+                AccountDto newAccount = await authService.Registration(accountRequest);
+                if (newAccount != null)
+                {
+                    // Log to microservice log
+                    logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} registered (Success). Sending back data.");
 
-            //        // TODO: Sent new registered account (message) to MQ
-            //        accountMQPublisher.SendCreatedAccount(newAccount);
+                    // TODO: Sent new registered account (message) to MQ
+                    accountMQPublisher.SendCreatedAccount(newAccount);
 
-            //        // Send signalR message (trigger any MQ consumer and consumer-apps)
-            //        await hubConnectionAuth.SendAsync("RegistrationDone", appId, newAccount);
-            //    }
-            //    else
-            //    {
-            //        logger.LogWarning($"-- {accountRequest.PhoneNumber} did not register - " +
-            //            $"account with same phonenumber already exists(Fail). " +
-            //            $"Requested by: {appId} - sending back error message.");
-
-            //        await hubConnectionAuth.SendAsync("RegistrationFailed", appId, $"Account registration failed for: {appId}");
-            //    }
-            //});
+                    // Send signalR message (trigger any MQ consumer and consumer-apps)
+                    await hubConnection.SendAsync("RegistrationDone", appIdentifier, newAccount);
+                }
+                else
+                {
+                    logger.LogWarning($"[{appIdentifier}] - {accountRequest.PhoneNumber} did not register (Fail). Sending back error message.");
+                    await hubConnection.SendAsync("RegistrationFailed", appIdentifier, $"Account registration failed for: {appIdentifier}");
+                }
+            });
         }
     }
 }

@@ -32,7 +32,7 @@ namespace AccountMicroservice.SignalRServices
             {
                 if (t.IsFaulted)
                 {
-                    logger.LogInformation("-- Couln't connect to signalR AuthHub (OnStarted)");
+                    logger.LogInformation("-- Couln't connect to SignalR AccountHub (OnStarted)");
                     return;
                 }
                 logger.LogInformation("AccountMicroservice connected to AuthHub successfully (OnStarted)");
