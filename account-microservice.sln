@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.Dtos", "..\..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.Settings", "..\..\api\api-gateway\Ping.Commons.Settings\Ping.Commons.Settings.csproj", "{D68E6407-AAE1-42F6-AF26-86A236BA489C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ping.Commons.SignalR", "..\..\api\api-gateway\Ping.Commons.SignalR\Ping.Commons.SignalR.csproj", "{21DA0A68-8D75-40E5-AECD-480D8CAFA3A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D68E6407-AAE1-42F6-AF26-86A236BA489C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21DA0A68-8D75-40E5-AECD-480D8CAFA3A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21DA0A68-8D75-40E5-AECD-480D8CAFA3A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21DA0A68-8D75-40E5-AECD-480D8CAFA3A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21DA0A68-8D75-40E5-AECD-480D8CAFA3A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

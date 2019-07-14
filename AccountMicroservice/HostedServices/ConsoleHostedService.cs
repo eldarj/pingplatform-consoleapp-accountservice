@@ -13,7 +13,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using AccountMicroservice.Settings;
 using AccountMicroservice.SignalRServices.Interfaces;
 
 namespace AccountMicroservice.HostedServices

@@ -1,6 +1,4 @@
-﻿using AccountMicroservice.Settings;
-using Microsoft.Extensions.Options;
-using Ping.Commons.Settings;
+﻿using Ping.Commons.Settings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,10 +7,11 @@ using Ping.Commons.Dtos.Models.Auth;
 using AccountMicroservice.Data.Services;
 using Microsoft.Extensions.Logging;
 using AccountMicroservice.SignalRServices.Interfaces;
-using AccountMicroservice.SignalRServices.Base;
 using Api.DtoModels.Auth;
 using Ping.Commons.Dtos.Models.Wrappers.Response;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
+using Ping.Commons.SignalR.Base;
+using Microsoft.Extensions.Options;
 
 namespace AccountMicroservice.SignalRServices
 {

@@ -18,7 +18,6 @@ using AccountMicroservice.MessageBus.Publishers;
 using AccountMicroservice.MessageBus.Publishers.Interfaces;
 using AccountMicroservice.MessageBus.Consumers;
 using Ping.Commons.Settings;
-using AccountMicroservice.Settings;
 using AccountMicroservice.HostedServices;
 using AccountMicroservice.SignalRServices.Interfaces;
 using AccountMicroservice.SignalRServices;

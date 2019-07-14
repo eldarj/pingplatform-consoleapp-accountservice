@@ -1,9 +1,8 @@
-﻿using AccountMicroservice.Settings;
-using AccountMicroservice.SignalRServices.Base;
-using AccountMicroservice.SignalRServices.Interfaces;
+﻿using AccountMicroservice.SignalRServices.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ping.Commons.Settings;
+using Ping.Commons.SignalR.Base;
 using System;
 using System.Collections.Generic;
 using System.Text;
