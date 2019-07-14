@@ -58,7 +58,7 @@ namespace AccountMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
-            base.hubConnection.On("RequestCallingCodes", async (string appIdentifier) =>
+            base.hubConnection.On<string>("RequestCallingCodes", async (string appIdentifier) =>
             {
                 logger.LogInformation($"[{appIdentifier}] requesting CallingCodes.");
 
