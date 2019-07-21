@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Collections.Generic;
+
+using Ping.Commons.SignalR.Interfaces;
 
 namespace AccountMicroservice.SignalRServices.Interfaces
 {
