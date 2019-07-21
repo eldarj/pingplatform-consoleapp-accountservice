@@ -1,17 +1,19 @@
-﻿using Ping.Commons.Settings;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Text;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR.Client;
-using Ping.Commons.Dtos.Models.Auth;
-using AccountMicroservice.Data.Services;
 using Microsoft.Extensions.Logging;
-using AccountMicroservice.SignalRServices.Interfaces;
-using Api.DtoModels.Auth;
-using Ping.Commons.Dtos.Models.Wrappers.Response;
-using AccountMicroservice.MessageBus.Publishers.Interfaces;
-using Ping.Commons.SignalR.Base;
 using Microsoft.Extensions.Options;
+
+using Api.DtoModels.Auth;
+using AccountMicroservice.Data.Services;
+using AccountMicroservice.SignalRServices.Interfaces;
+using AccountMicroservice.MessageBus.Publishers.Interfaces;
+
+using Ping.Commons.Settings;
+using Ping.Commons.SignalR.Base;
+using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Wrappers.Response;
 
 namespace AccountMicroservice.SignalRServices
 {
@@ -50,7 +52,6 @@ namespace AccountMicroservice.SignalRServices
                     return;
                 }
                 logger.LogInformation("AccountMicroservice connected to AuthHub successfully (OnStarted)");
-
                 RegisterHandlers();
             });
         }
