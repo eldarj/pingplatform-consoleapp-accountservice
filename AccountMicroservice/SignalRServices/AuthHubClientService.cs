@@ -96,7 +96,7 @@ namespace AccountMicroservice.SignalRServices
             {
                 logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} requesting registration.");
 
-                AccountDto newAccount = await authService.Registration(accountRequest);
+                AccountDto newAccount = await authService.Registration(accountRequest, base.securitySettings.Secret);
                 if (newAccount != null)
                 {
                     // Log to microservice log

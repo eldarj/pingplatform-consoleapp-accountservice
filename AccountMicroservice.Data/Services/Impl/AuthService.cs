@@ -33,7 +33,15 @@ namespace AccountMicroservice.Data.Services.Impl
 
             if (account == null) return null;
 
-            // Generate 
+            // Update token // TODO - check db, and also start using countrycode + phonenumber
+            AuthToken token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault();
+            if (token == null)
+            {
+                token = new AuthToken { AccountId = account.Id };
+            }
+            token.Value = JWTokenHandler.GenerateToken(account.PhoneNumber, secret);
+            dbContext.SaveChangesAsync();
+
             return new AccountDto
             {
                 Firstname = account.Firstname,
@@ -42,8 +50,7 @@ namespace AccountMicroservice.Data.Services.Impl
                 PhoneNumber = account.PhoneNumber,
                 CallingCountryCode = account.CallingCodeObj.CallingCountryCode,
                 DateRegistered = account.DateRegistered,
-                //Token = dbContext.AuthTokens.Where(at => at.AccountId == account.Id).SingleOrDefault()?.Value,
-                Token = JWTokenHandler.GenerateToken(account.PhoneNumber, secret),
+                Token = token.Value,
                 AvatarImageUrl = account.AvatarImageUrl,
                 CoverImageUrl = account.CoverImageUrl,
                 CreateSession = true,
@@ -63,7 +70,7 @@ namespace AccountMicroservice.Data.Services.Impl
             };
         }
 
-        public async Task<AccountDto> Registration(AccountDto accountDto)
+        public async Task<AccountDto> Registration(AccountDto accountDto, string secret)
         {
             Account account = dbContext.Accounts
                 .Where(a => a.PhoneNumber == accountDto.PhoneNumber && a.CallingCountryCode == accountDto.CallingCountryCode)
@@ -100,7 +107,7 @@ namespace AccountMicroservice.Data.Services.Impl
             var token = new AuthToken
             {
                 Account = account,
-                Value = "xxx"
+                Value = JWTokenHandler.GenerateToken(account.PhoneNumber, secret)
             };
 
             dbContext.Accounts.Add(account);

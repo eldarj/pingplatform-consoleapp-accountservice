@@ -22,15 +22,16 @@ namespace AccountMicroservice.SignalRServices
         private static readonly string HUB_ENDPOINT = "accounthub";
 
         private readonly ILogger logger;
-        private readonly IAuthService authService;
+        private readonly IAccountService accountService;
 
         public AccountHubClientService(IOptions<GatewayBaseSettings> gatewayBaseOptions, 
             IOptions<SecuritySettings> securityOptions,
-            ILogger<AuthHubClientService> logger)
+            IAccountService accountService,
+            ILogger<AccountHubClientService> logger)
             : base(gatewayBaseOptions, securityOptions, HUB_ENDPOINT)
         {
             this.logger = logger;
-            this.authService = authService;
+            this.accountService = accountService;
         }
 
         public async void Connect()
@@ -49,55 +50,36 @@ namespace AccountMicroservice.SignalRServices
 
         public void RegisterHandlers()
         {
-            // TODO: Finish this after implementing AuthHub and ChatHub
-            //hubConnectionAccount.On<string, string, string>("CoverUpload", async (appId, phoneNumber, imgUrl) =>
-            //{
-            //    logger.LogInformation($"-- {appId} requesting CoverUpload. for {phoneNumber}.");
-
-            //    //var authedAccount = authService.Authenticate(phoneNumber);
-            //    //if (authedAccount != null)
-            //    //{
-            //    //    logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
-            //    //        $"Proceeding to cover upload.");
-
-            //    //    authedAccount.CoverImageUrl = imgUrl;
-
-            //    //    AccountDto accountResponse = await accountService.UpdateCover(authedAccount);
-            //    //    if (accountResponse != null)
-            //    //    {
-            //    //        await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
-            //    //        return;
-            //    //    }
-            //    //}
-
-            //    //logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
-            //    //    $"Requested by: {appId} - sending back error message.");
-            //    //await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
-            //});
-
-            hubConnection.On<string, string, string>("AvatarUpload", async (appId, phoneNumber, imgUrl) =>
+            hubConnection.On<string, string>("CoverUpload", async (phoneNumber, imgUrl) =>
             {
-                logger.LogInformation($"-- {appId} requesting AvatarUpload. for {phoneNumber}.");
+                logger.LogInformation($"[{phoneNumber}] - request cover update {imgUrl}.");
 
-                //var authedAccount = authService.Authenticate(phoneNumber);
-                //if (authedAccount != null)
-                //{
-                //    logger.LogInformation($"-- {phoneNumber} authenticated (Success). " +
-                //        $"Proceeding to avatar upload.");
+                AccountDto accountResponse = await accountService.UpdateCover(phoneNumber, imgUrl);
+                if (accountResponse != null)
+                {
+                    logger.LogInformation($"[{phoneNumber}] - Updated cover image to {imgUrl} (Success). Sending back data.");
+                    await hubConnection.SendAsync("UpdateProfileSuccess", phoneNumber, accountResponse);
+                    return;
+                }
 
-                //    authedAccount.AvatarImageUrl = imgUrl;
+                logger.LogWarning($"[{phoneNumber}] - Couldn't find account by given phone number (Fail - CoverUpload). Sending back error message.");
+                await hubConnection.SendAsync("UpdateProfileFailed", phoneNumber, $"Authentication failed for: {phoneNumber}");
+            });
 
-                //    AccountDto accountResponse = await accountService.UpdateAvatar(authedAccount);
-                //    if (accountResponse != null)
-                //    {
-                //        await hubConnectionAccount.SendAsync("UpdateProfileSuccess", appId, accountResponse);
-                //        return;
-                //    }
-                //}
+            hubConnection.On<string, string>("AvatarUpload", async (phoneNumber, imgUrl) =>
+            {
+                logger.LogInformation($"[{phoneNumber}] - requesting avatar update {imgUrl}.");
 
-                //logger.LogInformation($"-- {phoneNumber} did not authenticate (Fail). " +
-                //    $"Requested by: {appId} - sending back error message.");
-                //await hubConnectionAccount.SendAsync("UpdateProfileFailed", appId, $"Authentication failed for: {appId}");
+                AccountDto accountResponse = await accountService.UpdateAvatar(phoneNumber, imgUrl);
+                if (accountResponse != null)
+                {
+                    logger.LogInformation($"[{phoneNumber}] - Updated profile image to {imgUrl} (Success). Sending back data.");
+                    await hubConnection.SendAsync("UpdateProfileSuccess", phoneNumber, accountResponse);
+                    return;
+                }
+
+                logger.LogWarning($"[{phoneNumber}] - Couldn't find account by given phone number (Fail - AvatarUpload). Sending back error message.");
+                await hubConnection.SendAsync("UpdateProfileFailed", phoneNumber, $"Authentication failed for: {phoneNumber}");
             });
 
             //hubConnectionAccount.On<string, AccountDto>("UpdateProfile", async (appId, accountRequest) =>

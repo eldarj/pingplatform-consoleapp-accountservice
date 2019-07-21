@@ -9,7 +9,9 @@ namespace AccountMicroservice.Data.Services
 {
     public interface IAccountService
     {
+        Task<AccountDto> UpdateAvatar(string phoneNumber, string imgUrl);
         Task<AccountDto> UpdateAvatar(AccountDto accountDto);
+        Task<AccountDto> UpdateCover(string phoneNumber, string imgUrl);
         Task<AccountDto> UpdateCover(AccountDto accountDto);
         Task<AccountDto> Update(AccountDto accountDto);
         Task<bool> AddContact(ContactDto contactDto);

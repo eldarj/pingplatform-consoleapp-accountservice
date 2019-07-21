@@ -54,16 +54,16 @@ namespace AccountMicroservice.Data.Services.Impl
         }
 
         // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?
-        public async Task<AccountDto> UpdateAvatar(AccountDto accountDto)
+        public async Task<AccountDto> UpdateAvatar(string phoneNumber, string imgUrl)
         {
             var account = dbContext.Accounts
                 .Include(a => a.CallingCodeObj)
-                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
+                .Where(a => a.PhoneNumber == phoneNumber)
                 .SingleOrDefault();
 
             if (account == null) return null;
 
-            account.AvatarImageUrl = accountDto.AvatarImageUrl;
+            account.AvatarImageUrl = imgUrl;
 
             await dbContext.SaveChangesAsync();
 
@@ -82,15 +82,21 @@ namespace AccountMicroservice.Data.Services.Impl
                 CreateSession = true
             };
         }
-        public async Task<AccountDto> UpdateCover(AccountDto accountDto)
+
+        // TODO: Handle all the custom mapping (Db to Dto models) - probably by creating a IMapper?
+        public async Task<AccountDto> UpdateAvatar(AccountDto accountDto) => 
+            await UpdateAvatar(accountDto.PhoneNumber, accountDto.AvatarImageUrl);
+
+        public async Task<AccountDto> UpdateCover(string phoneNumber, string imgUrl)
         {
             var account = dbContext.Accounts
                 .Include(a => a.CallingCodeObj)
-                .Where(a => a.PhoneNumber == accountDto.PhoneNumber)
+                .Where(a => a.PhoneNumber == phoneNumber)
                 .SingleOrDefault();
+
             if (account == null) return null;
 
-            account.CoverImageUrl = accountDto.CoverImageUrl;
+            account.CoverImageUrl = imgUrl;
 
             await dbContext.SaveChangesAsync();
 
@@ -109,6 +115,9 @@ namespace AccountMicroservice.Data.Services.Impl
                 CreateSession = true
             };
         }
+
+        public async Task<AccountDto> UpdateCover(AccountDto accountDto) =>
+            await UpdateCover(accountDto.PhoneNumber, accountDto.CoverImageUrl);
 
         public async Task<AccountDto> Update(AccountDto accountDto)
         {
