@@ -1,5 +1,6 @@
 ﻿using Api.DtoModels.Auth;
 using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Chat;
 using System;
 using System.Collections.Generic;
 using System.Text;

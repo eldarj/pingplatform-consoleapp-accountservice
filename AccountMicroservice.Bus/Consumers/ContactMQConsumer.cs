@@ -4,7 +4,7 @@ using AccountMicroservice.MessageBus.Consumers.Interfaces;
 using AccountMicroservice.MessageBus.Utils;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Chat;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;

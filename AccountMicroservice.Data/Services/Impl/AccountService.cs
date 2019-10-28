@@ -6,6 +6,7 @@ using AccountMicroservice.Data.Models;
 using Api.DtoModels.Auth;
 using Microsoft.EntityFrameworkCore;
 using Ping.Commons.Dtos.Models.Auth;
+using Ping.Commons.Dtos.Models.Chat;
 
 namespace AccountMicroservice.Data.Services.Impl
 {

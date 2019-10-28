@@ -78,17 +78,18 @@ namespace AccountMicroservice.SignalRServices
             {
                 logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} requesting auth.");
 
-                var authedAccount = authService.Authenticate(accountRequest, base.securitySettings.Secret);
+                AccountDto authedAccount = authService.Authenticate(accountRequest, base.securitySettings.Secret);
                 if (authedAccount != null)
                 {
                     logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} authenticated (Success). Sending back data.");
-                    await hubConnection.SendAsync("AuthenticationDone", appIdentifier, authedAccount);
+                    await hubConnection.SendAsync("AuthenticationDone", appIdentifier,
+                        new ResponseDto<AccountDto> { Content = authedAccount, Message = "Authentication successful.", MessageCode = "200" });
                 }
                 else
                 {
                     logger.LogInformation($"[{appIdentifier}] - {accountRequest.PhoneNumber} did not authenticate (Fail). Sending back error message.");
                     await hubConnection.SendAsync("AuthenticationFailed", appIdentifier,
-                        new ResponseDto<AccountDto> { Dto = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
+                        new ResponseDto<AccountDto> { Content = accountRequest, Message = "Authentication failed.", MessageCode = "401" });
                 }
             });
 
@@ -106,12 +107,14 @@ namespace AccountMicroservice.SignalRServices
                     accountMQPublisher.SendCreatedAccount(newAccount);
 
                     // Send signalR message (trigger any MQ consumer and consumer-apps)
-                    await hubConnection.SendAsync("RegistrationDone", appIdentifier, newAccount);
+                    await hubConnection.SendAsync("RegistrationDone", appIdentifier,
+                        new ResponseDto<AccountDto> { Content = newAccount, Message = "Successfully created account.", MessageCode = "200" });
                 }
                 else
                 {
                     logger.LogWarning($"[{appIdentifier}] - {accountRequest.PhoneNumber} did not register (Fail). Sending back error message.");
-                    await hubConnection.SendAsync("RegistrationFailed", appIdentifier, $"Account registration failed for: {appIdentifier}");
+                    await hubConnection.SendAsync("RegistrationFailed", appIdentifier,
+                        new ResponseDto<AccountDto> { Content = accountRequest, Message = "Registration failed.", MessageCode = "500" });
                 }
             });
         }
